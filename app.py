@@ -57,7 +57,7 @@ st.sidebar.header("Filtros")
 aluno_ids = st.sidebar.multiselect("Filtrar por aluno_id", df_vagas["aluno_id"].dropna().unique())
 turmas = st.sidebar.multiselect("Filtrar por turma", df_vagas["turma"].dropna().unique())
 pipelines = st.sidebar.multiselect("Filtrar por pipeline_name", df_vagas["pipeline_name"].dropna().unique())
-produtos = st.sidebar.multiselect("Filtrar por produto)", df_vagas["produto"].dropna().unique())
+produtos = st.sidebar.multiselect("Filtrar por produto", df_vagas["produto"].dropna().unique())
 
 datas_validas = df_vagas["closed_at"].dropna()
 data_min = datas_validas.min()
@@ -132,7 +132,7 @@ with col2:
     csv_out = df_outliers[colunas_desejadas].to_csv(index=False).encode("utf-8")
     st.download_button("Baixar outliers (inclui abertos)", csv_out, "outliers.csv", "text/csv")
 
-# --- Tabela de filtros aplicados ---
+# --- Tabela de filtros aplicados ---extraído
 filtros_tabela = """
 <h3>Filtros aplicados:</h3>
 <table border="1" cellpadding="6" cellspacing="0" style="background-color:white; color:black;">
