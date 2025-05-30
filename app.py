@@ -3,7 +3,7 @@ import streamlit as st
 import os
 
 # --- Configuração da página ---
-st.set_page_config("Média Total - Sem Outliers", layout="wide")
+st.set_page_config(page_title="Média Total - Sem Outliers", layout="wide")
 st.title("Média Total entre Compra e Início (Sem Outliers)")
 st.markdown("Análise geral do tempo médio entre a compra e o início do curso, com filtros dinâmicos e remoção de outliers via método IQR.")
 
@@ -12,11 +12,10 @@ html_output_path = "output5/index.html"
 os.makedirs("output5", exist_ok=True)
 
 # --- Leitura dos dados ---
-df_vagas = pd.read_csv("C:/Users/r.barcelos_g4educaca/Documents/streamlit/data/vagas_fct.csv")
+df_vagas = pd.read_csv("data/vagas_fct.csv")
 st.dataframe(df_vagas)
 
-
-
+# --- Processamento de datas ---
 df_vagas["closed_at"] = pd.to_datetime(df_vagas["closed_at"], errors="coerce")
 df_vagas["inicio_at"] = pd.to_datetime(df_vagas["inicio_at"], errors="coerce")
 df_vagas["dias_entre_compra_e_inicio"] = (df_vagas["inicio_at"] - df_vagas["closed_at"]).dt.days
@@ -99,7 +98,7 @@ with col2:
     csv_out = df_outliers[colunas_desejadas].to_csv(index=False).encode("utf-8")
     st.download_button("Baixar outliers (inclui abertos)", csv_out, "outliers.csv", "text/csv")
 
-# --- Tabela de filtros aplicados (simulação visual dos dropdowns) ---
+# --- Tabela de filtros aplicados ---
 filtros_tabela = """
 <h3>Filtros aplicados:</h3>
 <table border="1" cellpadding="6" cellspacing="0" style="background-color:white; color:black;">
@@ -218,3 +217,4 @@ with open(html_output_path, "rb") as f:
         file_name="index.html",
         mime="text/html"
     )
+
