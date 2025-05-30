@@ -12,7 +12,11 @@ html_output_path = "output5/index.html"
 os.makedirs("output5", exist_ok=True)
 
 # --- Leitura dos dados ---
-df_vagas = pd.read_csv("C:/Users/r.barcelos_g4educaca/Documents/cobertura_estoque/data/raw/vagas_fct.csv")
+df_vagas = pd.read_csv("C:/Users/r.barcelos_g4educaca/Documents/streamlit/data/vagas_fct.csv")
+st.dataframe(df_vagas)
+
+
+
 df_vagas["closed_at"] = pd.to_datetime(df_vagas["closed_at"], errors="coerce")
 df_vagas["inicio_at"] = pd.to_datetime(df_vagas["inicio_at"], errors="coerce")
 df_vagas["dias_entre_compra_e_inicio"] = (df_vagas["inicio_at"] - df_vagas["closed_at"]).dt.days
