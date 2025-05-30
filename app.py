@@ -13,7 +13,6 @@ os.makedirs("output5", exist_ok=True)
 
 # --- Leitura dos dados ---
 df_vagas = pd.read_csv("data/vagas_fct.csv")
-st.dataframe(df_vagas)
 
 # --- Processamento de datas ---
 df_vagas["closed_at"] = pd.to_datetime(df_vagas["closed_at"], errors="coerce")
