@@ -5,7 +5,7 @@ import os
 # --- Configuração da página ---
 st.set_page_config(page_title="Média Total - Sem Outliers", layout="wide")
 
-# --- Estilo customizado (modo escuro + fundo consistente) ---
+# --- Estilo customizado ---
 st.markdown(
     """
     <style>
@@ -38,6 +38,10 @@ os.makedirs("output5", exist_ok=True)
 
 # --- Leitura dos dados ---
 df_vagas = pd.read_csv("data/vagas_fct.csv")
+
+# --- Excluir pipelines indesejados do dropdown ---
+pipelines_para_excluir = ["Teste aluno", "Pipeline Interno"]
+df_vagas = df_vagas[~df_vagas["pipeline_name"].isin(pipelines_para_excluir)]
 
 # --- Processamento de datas ---
 df_vagas["closed_at"] = pd.to_datetime(df_vagas["closed_at"], errors="coerce")
@@ -91,7 +95,7 @@ df_sem_outliers = df_validos[
 
 df_outliers_iqr = df_validos[~df_validos.index.isin(df_sem_outliers.index)].copy()
 
-# --- Consolidar outliers (IQR + sem inicio)
+# --- Consolidar outliers (IQR + sem início)
 df_outliers = pd.concat([df_outliers_iqr, df_sem_inicio], ignore_index=True)
 
 # --- Colunas desejadas ---
@@ -244,4 +248,5 @@ with open(html_output_path, "rb") as f:
         file_name="index.html",
         mime="text/html"
     )
+
 
