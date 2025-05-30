@@ -4,6 +4,31 @@ import os
 
 # --- Configuração da página ---
 st.set_page_config(page_title="Média Total - Sem Outliers", layout="wide")
+
+# --- Estilo customizado (modo escuro + fundo consistente) ---
+st.markdown(
+    """
+    <style>
+        body {
+            background-color: #0e1117;
+            color: white;
+        }
+        .stApp {
+            background-color: #0e1117;
+        }
+        .block-container {
+            padding: 2rem;
+            max-width: 100%;
+        }
+        .stMarkdown, .stDataFrame {
+            background-color: transparent;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- Título e introdução ---
 st.title("Média Total entre Compra e Início (Sem Outliers)")
 st.markdown("Análise geral do tempo médio entre a compra e o início do curso, com filtros dinâmicos e remoção de outliers via método IQR.")
 
@@ -41,7 +66,10 @@ if pipelines:
     df_filtrado_geral = df_filtrado_geral[df_filtrado_geral["pipeline_name"].isin(pipelines)]
 if intervalo_data:
     data_ini, data_fim = pd.to_datetime(intervalo_data[0]), pd.to_datetime(intervalo_data[1])
-    df_filtrado_geral = df_filtrado_geral[(df_filtrado_geral["closed_at"] >= data_ini) & (df_filtrado_geral["closed_at"] <= data_fim)]
+    df_filtrado_geral = df_filtrado_geral[
+        (df_filtrado_geral["closed_at"] >= data_ini) & 
+        (df_filtrado_geral["closed_at"] <= data_fim)
+    ]
 
 # --- Separar registros sem inicio_at (abertos) ---
 df_sem_inicio = df_filtrado_geral[df_filtrado_geral["inicio_at"].isna()].copy()
