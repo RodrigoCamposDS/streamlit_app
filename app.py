@@ -39,7 +39,7 @@ os.makedirs("output5", exist_ok=True)
 # --- Leitura dos dados ---
 df_vagas = pd.read_csv("data/vagas_fct.csv")
 
-# --- Excluir pipelines indesejados do dropdown ---
+# --- Excluir pipelines indesejados ---
 pipelines_para_excluir = ["Teste aluno", "Pipeline Interno"]
 df_vagas = df_vagas[~df_vagas["pipeline_name"].isin(pipelines_para_excluir)]
 
@@ -49,11 +49,15 @@ df_vagas["inicio_at"] = pd.to_datetime(df_vagas["inicio_at"], errors="coerce")
 df_vagas["dias_entre_compra_e_inicio"] = (df_vagas["inicio_at"] - df_vagas["closed_at"]).dt.days
 df_vagas["dias_entre_compra_e_inicio"] = df_vagas["dias_entre_compra_e_inicio"].clip(lower=0)
 
+# --- Extrair produto da turma ---
+df_vagas["produto"] = df_vagas["turma"].astype(str).str.extract(r"IM\-([A-Z0-9]{1,5})")
+
 # --- Filtros dinâmicos ---
 st.sidebar.header("Filtros")
 aluno_ids = st.sidebar.multiselect("Filtrar por aluno_id", df_vagas["aluno_id"].dropna().unique())
 turmas = st.sidebar.multiselect("Filtrar por turma", df_vagas["turma"].dropna().unique())
 pipelines = st.sidebar.multiselect("Filtrar por pipeline_name", df_vagas["pipeline_name"].dropna().unique())
+produtos = st.sidebar.multiselect("Filtrar por produto (extraído da turma)", df_vagas["produto"].dropna().unique())
 
 datas_validas = df_vagas["closed_at"].dropna()
 data_min = datas_validas.min()
@@ -68,6 +72,8 @@ if turmas:
     df_filtrado_geral = df_filtrado_geral[df_filtrado_geral["turma"].isin(turmas)]
 if pipelines:
     df_filtrado_geral = df_filtrado_geral[df_filtrado_geral["pipeline_name"].isin(pipelines)]
+if produtos:
+    df_filtrado_geral = df_filtrado_geral[df_filtrado_geral["produto"].isin(produtos)]
 if intervalo_data:
     data_ini, data_fim = pd.to_datetime(intervalo_data[0]), pd.to_datetime(intervalo_data[1])
     df_filtrado_geral = df_filtrado_geral[
@@ -75,11 +81,11 @@ if intervalo_data:
         (df_filtrado_geral["closed_at"] <= data_fim)
     ]
 
-# --- Separar registros sem inicio_at (abertos) ---
+# --- Separar registros sem inicio_at ---
 df_sem_inicio = df_filtrado_geral[df_filtrado_geral["inicio_at"].isna()].copy()
 qtd_abertos_sem_inicio = len(df_sem_inicio)
 
-# --- Aplicar IQR apenas em registros com inicio_at válido ---
+# --- Aplicar IQR nos válidos ---
 df_validos = df_filtrado_geral[df_filtrado_geral["inicio_at"].notna()].copy()
 q1 = df_validos["dias_entre_compra_e_inicio"].quantile(0.25)
 q3 = df_validos["dias_entre_compra_e_inicio"].quantile(0.75)
@@ -87,26 +93,23 @@ iqr = q3 - q1
 limite_inferior = max(q1 - 1.5 * iqr, 0)
 limite_superior = q3 + 1.5 * iqr
 
-# --- Separar outliers com base no IQR ---
 df_sem_outliers = df_validos[
     (df_validos["dias_entre_compra_e_inicio"] >= limite_inferior) &
     (df_validos["dias_entre_compra_e_inicio"] <= limite_superior)
 ].copy()
 
 df_outliers_iqr = df_validos[~df_validos.index.isin(df_sem_outliers.index)].copy()
-
-# --- Consolidar outliers (IQR + sem início)
 df_outliers = pd.concat([df_outliers_iqr, df_sem_inicio], ignore_index=True)
 
 # --- Colunas desejadas ---
-colunas_desejadas = ["aluno_id", "turma", "pipeline_name", "closed_at", "inicio_at", "dias_entre_compra_e_inicio"]
+colunas_desejadas = ["aluno_id", "turma", "produto", "pipeline_name", "closed_at", "inicio_at", "dias_entre_compra_e_inicio"]
 
 # --- Métricas ---
 media_total = df_sem_outliers["dias_entre_compra_e_inicio"].mean()
 qtd_sem_outliers = len(df_sem_outliers)
 qtd_outliers = len(df_outliers)
 
-# --- Exibição no Streamlit ---
+# --- Exibição Streamlit ---
 st.subheader(f"Média Total (sem outliers): `{media_total:.2f}` dias")
 st.markdown(f"**Quantidade de registros sem outliers:** `{qtd_sem_outliers}`")
 st.markdown(f"**Quantidade de registros considerados outliers:** `{qtd_outliers}`")
@@ -140,6 +143,8 @@ if turmas:
     filtros_tabela += f"<tr><td><strong>turma</strong></td><td>{', '.join(map(str, turmas))}</td></tr>"
 if pipelines:
     filtros_tabela += f"<tr><td><strong>pipeline_name</strong></td><td>{', '.join(map(str, pipelines))}</td></tr>"
+if produtos:
+    filtros_tabela += f"<tr><td><strong>produto</strong></td><td>{', '.join(map(str, produtos))}</td></tr>"
 if intervalo_data:
     filtros_tabela += f"<tr><td><strong>Intervalo de data (closed_at)</strong></td><td>{intervalo_data[0]} até {intervalo_data[1]}</td></tr>"
 filtros_tabela += "</table>"
@@ -248,5 +253,6 @@ with open(html_output_path, "rb") as f:
         file_name="index.html",
         mime="text/html"
     )
+
 
 
