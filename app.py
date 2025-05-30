@@ -57,7 +57,7 @@ st.sidebar.header("Filtros")
 aluno_ids = st.sidebar.multiselect("Filtrar por aluno_id", df_vagas["aluno_id"].dropna().unique())
 turmas = st.sidebar.multiselect("Filtrar por turma", df_vagas["turma"].dropna().unique())
 pipelines = st.sidebar.multiselect("Filtrar por pipeline_name", df_vagas["pipeline_name"].dropna().unique())
-produtos = st.sidebar.multiselect("Filtrar por produto (extraído da turma)", df_vagas["produto"].dropna().unique())
+produtos = st.sidebar.multiselect("Filtrar por produto)", df_vagas["produto"].dropna().unique())
 
 datas_validas = df_vagas["closed_at"].dropna()
 data_min = datas_validas.min()
